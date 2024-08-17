@@ -1,5 +1,18 @@
 document.getElementById('salaryForm').addEventListener('input', debounce(calculate, 300));
 
+const recalculateButton = document.getElementById('recalculateButton');
+const infoMessage = document.getElementById('infoMessage');
+
+recalculateButton.addEventListener('click', () => {
+    // Clear the form fields
+    document.getElementById('salaryForm').reset();
+    
+    // Hide the results table and show the info message
+    document.getElementById('resultsTable').getElementsByTagName('tbody')[0].innerHTML = '';
+    infoMessage.style.display = 'block';
+    recalculateButton.style.display = 'none';
+});
+
 function formatNumber(num) {
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
 }
@@ -12,10 +25,6 @@ function calculate() {
         const firstDateInput = document.getElementById('firstDate').value;
         const secondDateInput = document.getElementById('secondDate').value;
 
-        const recalculateButton = document.getElementById('recalculateButton');
-        const infoMessage = document.getElementById('infoMessage');
-
-        // Hide/show elements based on form validation
         if (currentSalary && properSalary && firstDateInput && secondDateInput) {
             recalculateButton.style.display = 'block';
             infoMessage.style.display = 'none';
@@ -125,14 +134,4 @@ function updateResults(results) {
         <tr><th>Less GSIS</th><td>${results.lessGsis}</td></tr>
         <tr><th>Tax</th><td>${results.withholdingTax}</td></tr>
         <tr><th>Total Deduction</th><td>${results.totalDeduction}</td></tr>
-        <tr><th>Net</th><td>${results.netAmount}</td></tr>
-    `;
-}
-
-function debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-    };
-}
+        <tr><th>Net</th><td>${results.netAmount}</td
