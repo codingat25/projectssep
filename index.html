@@ -13,6 +13,7 @@
             <h1>Project SSEP</h1>
             <h3>Salary Differential Calculator</h3>
         </header>
+
         <form id="salaryForm">
             <label for="currentSalary">Current Salary:</label>
             <input type="text" id="currentSalary" placeholder="Enter current salary" required>
@@ -25,8 +26,10 @@
 
             <label for="secondDate">End Date:</label>
             <input type="date" id="secondDate" required>
-
         </form>
+
+        <button type="submit" id="recalculateButton">Re-calculate</button>
+
         <table id="resultsTable">
             <thead>
                 <tr>
@@ -38,14 +41,16 @@
                 <!-- Results will be dynamically inserted here -->
             </tbody>
         </table>
+
         <div class="info-message">
             <p>Please provide all the required information in the form above. Your data will be displayed here once you submit.</p>
         </div>
-        <button type="submit">Re-calculate</button>
+
         <footer>
             <p>© 2024 SDO Aklan - Payroll Unit</p>
         </footer>
     </div>
+
     <script src="js/script.js"></script>
 </body>
 </html>

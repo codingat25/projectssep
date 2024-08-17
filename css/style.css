@@ -10,7 +10,6 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    overflow: hidden; /* Prevent body from scrolling */
 }
 
 .container {
@@ -18,81 +17,71 @@ body {
     color: #333;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 80%; /* Shrink width */
-    max-width: 500px; /* Further reduce max-width */
-    max-height: 80vh;
-    overflow-y: auto;
+    width: 80%;
+    max-width: 700px;
     padding: 20px;
     box-sizing: border-box;
-}
-
-/* Scrollbar styling */
-.container::-webkit-scrollbar {
-    width: 8px;
-}
-.container::-webkit-scrollbar-track {
-    background: #f0f0f0;
-}
-.container::-webkit-scrollbar-thumb {
-    background: #6d28d9;
-    border-radius: 4px;
-}
-.container::-webkit-scrollbar-thumb:hover {
-    background: #4c1d95;
+    text-align: center;
 }
 
 header {
-    text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 .logo {
-    max-width: 70px;
-    margin-bottom: 8px;
+    max-width: 100px;
+    height: auto;
+    margin-bottom: 10px;
 }
 
 h1 {
-    font-size: 1.4em;
-    color: #6d28d9;
+    font-size: 1.8em;
     margin: 0;
+    color: #6d28d9;
+}
+
+h3 {
+    margin-top: 5px;
+    color: #9d5a5a;
 }
 
 form {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    text-align: left;
 }
 
 label {
     display: block;
-    margin: 5px 0;
+    margin: 8px 0 4px;
     font-weight: bold;
-    text-align: left; /* Left align label text */
 }
 
 input[type="text"], input[type="date"] {
-    width: calc(100% - 16px);
+    width: 100%;
     padding: 8px;
     border: 1px solid #d1d5db;
     border-radius: 4px;
-    margin-bottom: 10px;
-    box-sizing: border-box;
+    margin-bottom: 12px;
+    font-size: 0.9em;
 }
 
 input[type="text"]:focus, input[type="date"]:focus {
     border-color: #6d28d9;
+    outline: none;
 }
 
-button {
+button[type="submit"] {
+    padding: 10px 20px;
     background-color: #6d28d9;
-    color: #fff;
+    color: white;
     border: none;
     border-radius: 4px;
-    padding: 8px 12px;
-    font-size: 0.9em;
     cursor: pointer;
-    transition: background-color 0.3s;
+    margin-top: 15px;
+    margin-bottom: 15px;
 }
 
-button:hover {
+button[type="submit"]:hover {
     background-color: #4c1d95;
 }
 
@@ -103,19 +92,14 @@ table {
 }
 
 thead {
-    background: linear-gradient(135deg, #9a7b8b, #6d28d9); /* Gradient for header */
+    background-color: #6d28d9;
     color: #fff;
 }
 
-thead th {
-    text-align: left; /* Left align header text */
-    padding: 10px;
-}
-
 th, td {
-    padding: 8px;
+    padding: 10px;
     border-bottom: 1px solid #ddd;
-    text-align: left; /* Left align all text in table cells */
+    text-align: left;
 }
 
 tfoot {
@@ -125,16 +109,6 @@ tfoot {
 footer {
     text-align: center;
     margin-top: 15px;
-    font-size: 0.8em;
+    font-size: 0.85em;
     color: #333;
-}
-
-.info-message {
-    margin-top: 15px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background-color: #f9f9f9;
-    color: #333;
-    text-align: center; /* Center the text inside the message box */
 }
