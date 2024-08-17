@@ -28,8 +28,10 @@
             <input type="date" id="secondDate" required>
         </form>
 
-        <button type="submit" id="recalculateButton">Re-calculate</button>
+        <!-- Re-calculate button, initially hidden -->
+        <button type="submit" id="recalculateButton" style="display: none;">Re-calculate</button>
 
+        <!-- Results Table -->
         <table id="resultsTable">
             <thead>
                 <tr>
@@ -42,7 +44,8 @@
             </tbody>
         </table>
 
-        <div class="info-message">
+        <!-- Info message, initially visible -->
+        <div class="info-message" id="infoMessage">
             <p>Please provide all the required information in the form above. Your data will be displayed here once you submit.</p>
         </div>
 

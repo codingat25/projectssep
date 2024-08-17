@@ -12,19 +12,16 @@ function calculate() {
         const firstDateInput = document.getElementById('firstDate').value;
         const secondDateInput = document.getElementById('secondDate').value;
 
-        if (!firstDateInput || !secondDateInput) {
-            updateResults({
-                currentSalary: formatNumber(currentSalary),
-                properSalary: formatNumber(properSalary),
-                initialDifferentialAmount: formatNumber(0),
-                grossSalDiff: formatNumber(0),
-                sdBonus: formatNumber(0),
-                gsisPshare: formatNumber(0),
-                lessGsis: formatNumber(0),
-                withholdingTax: formatNumber(0),
-                totalDeduction: formatNumber(0),
-                netAmount: formatNumber(0),
-            });
+        const recalculateButton = document.getElementById('recalculateButton');
+        const infoMessage = document.getElementById('infoMessage');
+
+        // Hide/show elements based on form validation
+        if (currentSalary && properSalary && firstDateInput && secondDateInput) {
+            recalculateButton.style.display = 'block';
+            infoMessage.style.display = 'none';
+        } else {
+            recalculateButton.style.display = 'none';
+            infoMessage.style.display = 'block';
             return;
         }
 
@@ -49,10 +46,8 @@ function calculate() {
 
         const grossSalDiff = calculatedDifferential + sdBonus;
         const gsisPS = 0.09;
-        const gsisGS = 0.12;
 
         const gsisPshare = initialDifferentialAmount * differenceInMonths * gsisPS;
-        const gsisGshare = initialDifferentialAmount * differenceInMonths * gsisGS;
         const lessGsis = grossSalDiff - gsisPshare;
 
         const taxPercentage = getTaxPercentage(properSalary * 12);
@@ -95,7 +90,7 @@ function getDifferenceInMonths(startDate, endDate) {
         months += 12;
     }
 
-    return years * 12 + months + (days / 30); // Approximate month fraction for partial months
+    return years * 12 + months + (days / 30);
 }
 
 function midYearEligible(startDate, endDate) {
@@ -114,7 +109,7 @@ function getTaxPercentage(annualSalary) {
     if (annualSalary >= 400001 && annualSalary <= 800000) return 0.20;
     if (annualSalary >= 800001 && annualSalary <= 2000000) return 0.25;
     if (annualSalary >= 2000001 && annualSalary <= 8000000) return 0.30;
-    return 0.32; // Default tax rate if salary exceeds 8000000
+    return 0.32;
 }
 
 function updateResults(results) {
