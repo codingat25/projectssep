@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project SSEP</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="images/logo.png" alt="Office Logo" class="logo">
+            <h1>Project SSEP</h1>
+            <h3>Salary Differential Calculator</h3>
+        </header>
+        <form id="salaryForm">
+            <label for="currentSalary">Current Salary:</label>
+            <input type="text" id="currentSalary" placeholder="Enter current salary" required>
+
+            <label for="properSalary">Appropriate Salary:</label>
+            <input type="text" id="properSalary" placeholder="Enter proper salary" required>
+
+            <label for="firstDate">Start Date:</label>
+            <input type="date" id="firstDate" required>
+
+            <label for="secondDate">End Date:</label>
+            <input type="date" id="secondDate" required>
+
+            <button type="submit">Re-calculate</button>
+        </form>
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Results will be dynamically inserted here -->
+            </tbody>
+        </table>
+        <div class="info-message">
+            <p>Please provide all the required information in the form above. Your data will be displayed here once you submit.</p>
+        </div>
+        <footer>
+            <p>© 2024 SDO Aklan - Payroll Unit</p>
+        </footer>
+    </div>
+    <script src="js/script.js"></script>
+</body>
+</html>
