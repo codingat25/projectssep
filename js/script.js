@@ -134,4 +134,14 @@ function updateResults(results) {
         <tr><th>Less GSIS</th><td>${results.lessGsis}</td></tr>
         <tr><th>Tax</th><td>${results.withholdingTax}</td></tr>
         <tr><th>Total Deduction</th><td>${results.totalDeduction}</td></tr>
-        <tr><th>Net</th><td>${results.netAmount}</td
+        <tr><th>Net</th><td>${results.netAmount}</td></tr>
+    `;
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
