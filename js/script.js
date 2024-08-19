@@ -55,7 +55,7 @@ function calculate() {
 
         // Calculate GSIS, Tax, Deductions, and Net
         const totalGrossWithBonus = grossSalDiff + sdBonus;
-        const gsisPS = 0.09;
+        const gsisPS = 0.09; // GSIS PS percentage
         const gsisPshare = totalGrossWithBonus * gsisPS;
         const lessGsis = totalGrossWithBonus - gsisPshare;
 
@@ -88,14 +88,18 @@ function calculate() {
 function calculateGrossDifferential(startDate, endDate, differentialAmount) {
     const businessDaysInFirstMonth = networkDays(startDate, getLastDayOfMonth(startDate));
     const businessDaysInSecondMonth = networkDays(getFirstDayOfMonth(endDate), endDate);
-
+    
+    const totalBusinessDays = businessDaysInFirstMonth + businessDaysInSecondMonth;
+    
     if (startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear()) {
-        return (differentialAmount / 22) * (businessDaysInFirstMonth + businessDaysInSecondMonth);
+        // Within the same month
+        return (differentialAmount / 22) * totalBusinessDays;
     } else {
+        // Across different months
         const fullMonths = getDifferenceInMonths(startDate, endDate) - 1;
-        return (differentialAmount / 22) * businessDaysInFirstMonth +
-               (differentialAmount / 22) * businessDaysInSecondMonth +
-               (differentialAmount * fullMonths);
+        const diffForPartialMonths = (differentialAmount / 22) * (businessDaysInFirstMonth + businessDaysInSecondMonth);
+        const diffForFullMonths = differentialAmount * fullMonths;
+        return diffForPartialMonths + diffForFullMonths;
     }
 }
 
@@ -149,12 +153,12 @@ function yearEndEligible(startDate, endDate) {
 
 // Function to get tax percentage based on annual salary
 function getTaxPercentage(annualSalary) {
-    if (annualSalary <= 250000) return 0;
-    if (annualSalary >= 250001 && annualSalary < 400000) return 0.15;
-    if (annualSalary >= 400001 && annualSalary <= 800000) return 0.20;
-    if (annualSalary >= 800001 && annualSalary <= 2000000) return 0.25;
-    if (annualSalary >= 2000001 && annualSalary <= 8000000) return 0.30;
-    return 0.32;
+    if (annualSalary <= 282612) return 0;
+    if (annualSalary <= 451944) return 0.15;
+    if (annualSalary <= 890772) return 0.20;
+    if (annualSalary <= 1185804) return 0.25;
+    if (annualSalary <= 8000000) return 0.30;
+    return 0.35;
 }
 
 // Function to update results table
