@@ -53,16 +53,16 @@ function calculate() {
             ? initialDifferentialAmount 
             : 0;
 
-        // Calculate GSIS, Tax, Deductions, and Net
-        const totalGrossWithBonus = grossSalDiff + sdBonus;
-        const gsisPS = 0.09;
-        const gsisPshare = totalGrossWithBonus * gsisPS;
-        const lessGsis = totalGrossWithBonus - gsisPshare;
+        // Adjusted GSIS calculation
+        const gsisRate = 0.09;
+        const gsisPshare = (grossSalDiff + sdBonus) * gsisRate; // Revised calculation
 
+        // Adjusted Tax percentage
         const taxPercentage = getTaxPercentage(properSalary * 12);
+        const lessGsis = (grossSalDiff + sdBonus) - gsisPshare;
         const withholdingTax = lessGsis * taxPercentage;
         const totalDeduction = gsisPshare + withholdingTax;
-        const netAmount = totalGrossWithBonus - totalDeduction;
+        const netAmount = (grossSalDiff + sdBonus) - totalDeduction;
 
         // Update results
         updateResults({
@@ -71,7 +71,7 @@ function calculate() {
             initialDifferentialAmount: formatNumber(initialDifferentialAmount),
             grossSalDiff: formatNumber(grossSalDiff),
             sdBonus: formatNumber(sdBonus),
-            totalGrossWithBonus: formatNumber(totalGrossWithBonus),
+            totalGrossWithBonus: formatNumber(grossSalDiff + sdBonus),
             gsisPshare: formatNumber(gsisPshare),
             lessGsis: formatNumber(lessGsis),
             withholdingTax: formatNumber(withholdingTax),
@@ -86,7 +86,6 @@ function calculate() {
 
 // Helper function to calculate the gross differential
 function calculateGrossDifferential(startDate, endDate, differentialAmount) {
-    // Calculate the number of business days in partial months
     const businessDaysInFirstMonth = networkDays(startDate, getLastDayOfMonth(startDate));
     const businessDaysInSecondMonth = networkDays(getFirstDayOfMonth(endDate), endDate);
 
@@ -186,7 +185,7 @@ function updateResults(results) {
     `;
 }
 
-// Debounce function to prevent too many rapid inputs
+// Debounce function to limit the rate of calls to calculate
 function debounce(func, wait) {
     let timeout;
     return function(...args) {
