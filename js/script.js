@@ -121,10 +121,33 @@ function yearEndEligible(startDate, endDate) {
 function getTaxPercentage(annualSalary) {
     if (annualSalary <= 250000) return 0;
     if (annualSalary >= 250001 && annualSalary < 400000) return 0.15;
-    if (annualSalary >= 400001 and annualSalary <= 800000) return 0.20;
-    if (annualSalary >= 800001 and annualSalary <= 2000000) return 0.25;
-    if (annualSalary >= 2000001 and annualSalary <= 8000000) return 0.30;
+    if (annualSalary >= 400001 && annualSalary <= 800000) return 0.20;
+    if (annualSalary >= 800001 && annualSalary <= 2000000) return 0.25;
+    if (annualSalary >= 2000001 && annualSalary <= 8000000) return 0.30;
     return 0.32;
+}
+
+function networkDays(startDate, endDate) {
+    let count = 0;
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+        const day = currentDate.getDay();
+        if (day !== 0 && day !== 6) { // 0 = Sunday, 6 = Saturday
+            count++;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return count;
+}
+
+function getFirstDayOfMonth(date) {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function getLastDayOfMonth(date) {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 }
 
 function updateResults(results) {
