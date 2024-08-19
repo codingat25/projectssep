@@ -47,14 +47,16 @@ function calculate() {
 
         const initialDifferentialAmount = Math.max(0, properSalary - currentSalary);
         const differenceInMonths = getDifferenceInMonths(firstDate, secondDate);
-        const businessDaysFirstDate = getBusinessDaysInMonth(firstDate);
-        const businessDaysSecondDate = getBusinessDaysInMonth(secondDate);
+
+        // Calculate business days in each segment
+        const businessDaysFirstSegment = networkDays(firstDate, getLastDayOfMonth(firstDate));
+        const businessDaysSecondSegment = networkDays(getFirstDayOfMonth(secondDate), secondDate);
 
         let calculatedDifferential;
         if (differenceInMonths === 1) {
             // Special formula for 1 month difference
-            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstDate) +
-                                     (initialDifferentialAmount / 22 * businessDaysSecondDate);
+            const daysInMonth = businessDaysFirstSegment + businessDaysSecondSegment;
+            calculatedDifferential = (initialDifferentialAmount / 22 * daysInMonth);
         } else {
             // General formula
             calculatedDifferential = initialDifferentialAmount * differenceInMonths;
@@ -113,13 +115,6 @@ function getDifferenceInMonths(startDate, endDate) {
     return years * 12 + months + (days / 30);
 }
 
-function getBusinessDaysInMonth(date) {
-    // Get the number of business days in the month of the given date
-    const start = new Date(date.getFullYear(), date.getMonth(), 1);
-    const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-    return networkDays(start, end);
-}
-
 function networkDays(startDate, endDate) {
     let count = 0;
     let currentDate = new Date(startDate);
@@ -132,6 +127,14 @@ function networkDays(startDate, endDate) {
     }
 
     return count;
+}
+
+function getFirstDayOfMonth(date) {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function getLastDayOfMonth(date) {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 }
 
 function midYearEligible(startDate, endDate) {
