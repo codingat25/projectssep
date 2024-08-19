@@ -48,18 +48,17 @@ function calculate() {
         const initialDifferentialAmount = Math.max(0, properSalary - currentSalary);
         const differenceInMonths = getDifferenceInMonths(firstDate, secondDate);
 
-        // Calculate business days in each segment
+        // Calculate business days for first and second segments
         const businessDaysFirstSegment = networkDays(firstDate, getLastDayOfMonth(firstDate));
         const businessDaysSecondSegment = networkDays(getFirstDayOfMonth(secondDate), secondDate);
 
         let calculatedDifferential;
         if (differenceInMonths === 1) {
             // Special formula for 1 month difference
-            const daysInMonth = businessDaysFirstSegment + businessDaysSecondSegment;
-            calculatedDifferential = (initialDifferentialAmount / 22 * daysInMonth);
+            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + (initialDifferentialAmount / 22 * businessDaysSecondSegment);
         } else {
             // General formula
-            calculatedDifferential = initialDifferentialAmount * differenceInMonths;
+            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + (initialDifferentialAmount / 22 * businessDaysSecondSegment) + (initialDifferentialAmount * differenceInMonths);
         }
 
         const sdBonus = (midYearEligible(firstDate, secondDate) || yearEndEligible(firstDate, secondDate))
