@@ -3,20 +3,20 @@ document.getElementById('salaryForm').addEventListener('input', debounce(calcula
 const recalculateButton = document.getElementById('recalculateButton');
 const infoMessage = document.getElementById('infoMessage');
 
+// Reset form logic
 recalculateButton.addEventListener('click', () => {
-    // Clear the form fields
     document.getElementById('salaryForm').reset();
-    
-    // Hide the results table and show the info message
     document.getElementById('resultsTable').getElementsByTagName('tbody')[0].innerHTML = '';
     infoMessage.style.display = 'block';
     recalculateButton.style.display = 'none';
 });
 
+// Utility function for formatting numbers
 function formatNumber(num) {
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
 }
 
+// Main calculation function
 function calculate() {
     try {
         const currentSalary = parseFloat(document.getElementById('currentSalary').value.replace(/[^0-9.]/g, '')) || 0;
@@ -46,7 +46,7 @@ function calculate() {
         }
 
         const initialDifferentialAmount = Math.max(0, properSalary - currentSalary);
-        let grossSalDiff = calculateGrossDifferential(firstDate, secondDate, initialDifferentialAmount);
+        const grossSalDiff = calculateGrossDifferential(firstDate, secondDate, initialDifferentialAmount);
 
         // Calculate SD Bonus
         const sdBonus = (midYearEligible(firstDate, secondDate) || yearEndEligible(firstDate, secondDate)) 
@@ -84,6 +84,7 @@ function calculate() {
     }
 }
 
+// Helper function to calculate the gross differential
 function calculateGrossDifferential(startDate, endDate, differentialAmount) {
     const businessDaysInFirstMonth = networkDays(startDate, getLastDayOfMonth(startDate));
     const businessDaysInSecondMonth = networkDays(getFirstDayOfMonth(endDate), endDate);
@@ -98,6 +99,7 @@ function calculateGrossDifferential(startDate, endDate, differentialAmount) {
     }
 }
 
+// Helper function to calculate the number of months between two dates
 function getDifferenceInMonths(startDate, endDate) {
     let years = endDate.getFullYear() - startDate.getFullYear();
     let months = endDate.getMonth() - startDate.getMonth();
@@ -108,25 +110,7 @@ function getDifferenceInMonths(startDate, endDate) {
     return years * 12 + months;
 }
 
-function midYearEligible(startDate, endDate) {
-    const midYearDate = new Date(`05/15/${startDate.getFullYear()}`);
-    return startDate <= midYearDate && endDate >= midYearDate;
-}
-
-function yearEndEligible(startDate, endDate) {
-    const yearEndDate = new Date(`10/31/${startDate.getFullYear()}`);
-    return startDate <= yearEndDate && endDate >= yearEndDate;
-}
-
-function getTaxPercentage(annualSalary) {
-    if (annualSalary <= 250000) return 0;
-    if (annualSalary >= 250001 && annualSalary < 400000) return 0.15;
-    if (annualSalary >= 400001 && annualSalary <= 800000) return 0.20;
-    if (annualSalary >= 800001 && annualSalary <= 2000000) return 0.25;
-    if (annualSalary >= 2000001 && annualSalary <= 8000000) return 0.30;
-    return 0.32;
-}
-
+// Function to calculate the number of business days (excluding weekends) between two dates
 function networkDays(startDate, endDate) {
     let count = 0;
     let currentDate = new Date(startDate);
@@ -142,14 +126,38 @@ function networkDays(startDate, endDate) {
     return count;
 }
 
+// Helper function to get the first day of the month
 function getFirstDayOfMonth(date) {
     return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
+// Helper function to get the last day of the month
 function getLastDayOfMonth(date) {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 }
 
+// Functions to check SD Bonus eligibility
+function midYearEligible(startDate, endDate) {
+    const midYearDate = new Date(`05/15/${startDate.getFullYear()}`);
+    return startDate <= midYearDate && endDate >= midYearDate;
+}
+
+function yearEndEligible(startDate, endDate) {
+    const yearEndDate = new Date(`10/31/${startDate.getFullYear()}`);
+    return startDate <= yearEndDate && endDate >= yearEndDate;
+}
+
+// Function to get tax percentage based on annual salary
+function getTaxPercentage(annualSalary) {
+    if (annualSalary <= 250000) return 0;
+    if (annualSalary >= 250001 && annualSalary < 400000) return 0.15;
+    if (annualSalary >= 400001 && annualSalary <= 800000) return 0.20;
+    if (annualSalary >= 800001 && annualSalary <= 2000000) return 0.25;
+    if (annualSalary >= 2000001 && annualSalary <= 8000000) return 0.30;
+    return 0.32;
+}
+
+// Function to update results table
 function updateResults(results) {
     const resultsTable = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
     resultsTable.innerHTML = `
@@ -167,6 +175,7 @@ function updateResults(results) {
     `;
 }
 
+// Debounce function to prevent too many rapid inputs
 function debounce(func, wait) {
     let timeout;
     return function(...args) {
