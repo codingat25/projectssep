@@ -86,7 +86,7 @@ function calculate() {
 
 // Helper function to calculate the gross differential
 function calculateGrossDifferential(startDate, endDate, differentialAmount) {
-    // Calculate business days in partial months
+    // Calculate the number of business days in partial months
     const businessDaysInFirstMonth = networkDays(startDate, getLastDayOfMonth(startDate));
     const businessDaysInSecondMonth = networkDays(getFirstDayOfMonth(endDate), endDate);
 
