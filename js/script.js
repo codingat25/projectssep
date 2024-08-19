@@ -113,12 +113,12 @@ function yearEndEligible(startDate, endDate) {
 }
 
 function getTaxPercentage(annualSalary) {
-    if (annualSalary <= 250000) return 0;
-    if (annualSalary >= 250001 && annualSalary < 400000) return 0.15;
-    if (annualSalary >= 400001 && annualSalary <= 800000) return 0.20;
-    if (annualSalary >= 800001 && annualSalary <= 2000000) return 0.25;
-    if (annualSalary >= 2000001 && annualSalary <= 8000000) return 0.30;
-    return 0.32;
+    if (annualSalary <= 282612) return 0;
+    if (annualSalary >= 282613 && annualSalary < 451944) return 0.15;
+    if (annualSalary >= 451945 && annualSalary <= 890772) return 0.20;
+    if (annualSalary >= 890773 && annualSalary <= 1185804) return 0.25;
+    if (annualSalary >= 1185805 && annualSalary <= 8000000) return 0.30;
+    return 0.35;
 }
 
 function updateResults(results) {
