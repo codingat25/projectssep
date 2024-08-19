@@ -46,29 +46,34 @@ function calculate() {
         }
 
         const initialDifferentialAmount = Math.max(0, properSalary - currentSalary);
-        const differenceInMonths = getDifferenceInMonths(firstDate, secondDate);
-
-        // Calculate business days for each segment
-        const businessDaysFirstSegment = networkDays(firstDate, getLastDayOfMonth(firstDate));
-        const businessDaysSecondSegment = networkDays(getFirstDayOfMonth(secondDate), secondDate);
-
-        let calculatedDifferential;
         const salDiffPerDay = initialDifferentialAmount / 22;
 
-        if (differenceInMonths > 1) {
-            calculatedDifferential = (salDiffPerDay * businessDaysFirstSegment) + 
-                                     (salDiffPerDay * businessDaysSecondSegment) + 
-                                     (initialDifferentialAmount * differenceInMonths);
+        const firstPeriodEndDate = new Date(getLastDayOfMonth(firstDate));
+        const secondPeriodStartDate = new Date(getFirstDayOfMonth(secondDate));
+        const businessDaysFirstPeriod = networkDays(firstDate, firstPeriodEndDate);
+        const businessDaysSecondPeriod = networkDays(secondPeriodStartDate, secondDate);
+
+        let calculatedDifferential = 0;
+
+        if (firstDate.getMonth() === secondDate.getMonth() && firstDate.getFullYear() === secondDate.getFullYear()) {
+            // Same month
+            calculatedDifferential = salDiffPerDay * networkDays(firstDate, secondDate);
         } else {
-            calculatedDifferential = (salDiffPerDay * businessDaysFirstSegment) + 
-                                     (salDiffPerDay * businessDaysSecondSegment);
+            // Different months
+            const diffFirstPeriod = salDiffPerDay * businessDaysFirstPeriod;
+            const diffSecondPeriod = salDiffPerDay * businessDaysSecondPeriod;
+            calculatedDifferential = diffFirstPeriod + diffSecondPeriod;
         }
+
+        // Include full months differential if applicable
+        const differenceInMonths = getDifferenceInMonths(firstDate, secondDate);
+        const monthlyDifferential = initialDifferentialAmount * differenceInMonths;
 
         const sdBonus = (midYearEligible(firstDate, secondDate) || yearEndEligible(firstDate, secondDate))
             ? initialDifferentialAmount
             : 0;
 
-        const grossSalDiff = calculatedDifferential + sdBonus;
+        const grossSalDiff = calculatedDifferential + sdBonus + monthlyDifferential;
         const gsisPS = 0.09;
 
         const gsisPshare = initialDifferentialAmount * differenceInMonths * gsisPS;
@@ -159,7 +164,7 @@ function networkDays(startDate, endDate) {
 
     while (currentDate <= endDate) {
         const day = currentDate.getDay();
-        if (day !== 0 && day !== 6) { // Monday to Friday
+        if (day !== 0 && day !== 6) { // Exclude weekends
             count++;
         }
         currentDate.setDate(currentDate.getDate() + 1);
