@@ -1,4 +1,22 @@
-// Main calculation function
+document.getElementById('salaryForm').addEventListener('input', debounce(calculate, 300));
+
+const recalculateButton = document.getElementById('recalculateButton');
+const infoMessage = document.getElementById('infoMessage');
+
+recalculateButton.addEventListener('click', () => {
+    // Clear the form fields
+    document.getElementById('salaryForm').reset();
+    
+    // Hide the results table and show the info message
+    document.getElementById('resultsTable').getElementsByTagName('tbody')[0].innerHTML = '';
+    infoMessage.style.display = 'block';
+    recalculateButton.style.display = 'none';
+});
+
+function formatNumber(num) {
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+}
+
 function calculate() {
     try {
         const currentSalary = parseFloat(document.getElementById('currentSalary').value.replace(/[^0-9.]/g, '')) || 0;
@@ -28,32 +46,48 @@ function calculate() {
         }
 
         const initialDifferentialAmount = Math.max(0, properSalary - currentSalary);
-        const grossSalDiff = calculateGrossDifferential(firstDate, secondDate, initialDifferentialAmount);
+        const salDiffPerDay = initialDifferentialAmount / 22;
 
-        // Calculate SD Bonus
-        const sdBonus = (midYearEligible(firstDate, secondDate) || yearEndEligible(firstDate, secondDate)) 
-            ? initialDifferentialAmount 
-            : 0;
+        // Calculate business days for partial months
+        const firstPeriodEndDate = new Date(getLastDayOfMonth(firstDate));
+        const secondPeriodStartDate = new Date(getFirstDayOfMonth(secondDate));
+        const businessDaysFirstPeriod = networkDays(firstDate, firstPeriodEndDate);
+        const businessDaysSecondPeriod = networkDays(secondPeriodStartDate, secondDate);
 
-        // Calculate GSIS, Tax, Deductions, and Net
-        const totalGrossWithBonus = grossSalDiff + sdBonus;
+        let partialMonthDifferential = 0;
+
+        if (firstDate.getMonth() === secondDate.getMonth() && firstDate.getFullYear() === secondDate.getFullYear()) {
+            // Same month
+            partialMonthDifferential = salDiffPerDay * networkDays(firstDate, secondDate);
+        } else {
+            // Different months
+            const diffFirstPeriod = salDiffPerDay * businessDaysFirstPeriod;
+            const diffSecondPeriod = salDiffPerDay * businessDaysSecondPeriod;
+            partialMonthDifferential = diffFirstPeriod + diffSecondPeriod;
+        }
+
+        // Calculate full months differential
+        const differenceInMonths = getDifferenceInMonths(firstDate, secondDate);
+        const monthlyDifferential = initialDifferentialAmount * differenceInMonths;
+
+        // Gross Differential
+        const grossSalDiff = partialMonthDifferential + monthlyDifferential;
+
         const gsisPS = 0.09;
-        const gsisPshare = totalGrossWithBonus * gsisPS;
-        const lessGsis = totalGrossWithBonus - gsisPshare;
+        const gsisPshare = initialDifferentialAmount * differenceInMonths * gsisPS;
+        const lessGsis = grossSalDiff - gsisPshare;
 
         const taxPercentage = getTaxPercentage(properSalary * 12);
         const withholdingTax = lessGsis * taxPercentage;
         const totalDeduction = gsisPshare + withholdingTax;
-        const netAmount = totalGrossWithBonus - totalDeduction;
+        const netAmount = grossSalDiff - totalDeduction;
 
-        // Update results
         updateResults({
             currentSalary: formatNumber(currentSalary),
             properSalary: formatNumber(properSalary),
             initialDifferentialAmount: formatNumber(initialDifferentialAmount),
             grossSalDiff: formatNumber(grossSalDiff),
             sdBonus: formatNumber(sdBonus),
-            totalGrossWithBonus: formatNumber(totalGrossWithBonus),
             gsisPshare: formatNumber(gsisPshare),
             lessGsis: formatNumber(lessGsis),
             withholdingTax: formatNumber(withholdingTax),
@@ -66,72 +100,26 @@ function calculate() {
     }
 }
 
-// Helper function to calculate the gross differential
-function calculateGrossDifferential(startDate, endDate, differentialAmount) {
-    const daysInMonth = 22; // Standard number of working days per month
-
-    const businessDaysInFirstMonth = networkDays(startDate, getLastDayOfMonth(startDate));
-    const businessDaysInSecondMonth = networkDays(getFirstDayOfMonth(endDate), endDate);
-
-    const startMonthDays = networkDays(startDate, getLastDayOfMonth(startDate));
-    const endMonthDays = networkDays(getFirstDayOfMonth(endDate), endDate);
-
-    let partialMonthDifferential = 0;
-
-    if (startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear()) {
-        // Only one partial month
-        partialMonthDifferential = (differentialAmount / daysInMonth) * (businessDaysInFirstMonth);
-    } else {
-        // Two partial months
-        partialMonthDifferential = (differentialAmount / daysInMonth) * (businessDaysInFirstMonth) +
-                                   (differentialAmount / daysInMonth) * (businessDaysInSecondMonth);
-    }
-
-    // Calculate full months differential
-    const fullMonths = getDifferenceInMonths(startDate, endDate) - (startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear() ? 0 : 1);
-    const fullMonthDifferential = differentialAmount * fullMonths;
-
-    return partialMonthDifferential + fullMonthDifferential;
-}
-
-// Helper function to calculate the number of months between two dates
 function getDifferenceInMonths(startDate, endDate) {
+    if (!startDate || !endDate) return 0;
+
     let years = endDate.getFullYear() - startDate.getFullYear();
     let months = endDate.getMonth() - startDate.getMonth();
+    let days = endDate.getDate() - startDate.getDate();
+
+    if (days < 0) {
+        months -= 1;
+        days += new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).getDate();
+    }
+
     if (months < 0) {
         years -= 1;
         months += 12;
     }
-    return years * 12 + months;
+
+    return years * 12 + months + (days / 30);
 }
 
-// Function to calculate the number of business days (excluding weekends) between two dates
-function networkDays(startDate, endDate) {
-    let count = 0;
-    let currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-        const day = currentDate.getDay();
-        if (day !== 0 && day !== 6) { // 0 = Sunday, 6 = Saturday
-            count++;
-        }
-        currentDate.setDate(currentDate.getDate() + 1);
-    }
-    
-    return count;
-}
-
-// Helper function to get the first day of the month
-function getFirstDayOfMonth(date) {
-    return new Date(date.getFullYear(), date.getMonth(), 1);
-}
-
-// Helper function to get the last day of the month
-function getLastDayOfMonth(date) {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0);
-}
-
-// Functions to check SD Bonus eligibility
 function midYearEligible(startDate, endDate) {
     const midYearDate = new Date(`05/15/${startDate.getFullYear()}`);
     return startDate <= midYearDate && endDate >= midYearDate;
@@ -142,7 +130,6 @@ function yearEndEligible(startDate, endDate) {
     return startDate <= yearEndDate && endDate >= yearEndDate;
 }
 
-// Function to get tax percentage based on annual salary
 function getTaxPercentage(annualSalary) {
     if (annualSalary <= 282612) return 0;
     if (annualSalary >= 282613 && annualSalary < 451944) return 0.15;
@@ -152,7 +139,6 @@ function getTaxPercentage(annualSalary) {
     return 0.35;
 }
 
-// Function to update results table
 function updateResults(results) {
     const resultsTable = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
     resultsTable.innerHTML = `
@@ -161,7 +147,7 @@ function updateResults(results) {
         <tr><th>Difference</th><td>${results.initialDifferentialAmount}</td></tr>
         <tr><th>Gross Differential</th><td>${results.grossSalDiff}</td></tr>
         <tr><th>SD Bonus</th><td>${results.sdBonus}</td></tr>
-        <tr><th>Gross + SD Bonus</th><td>${results.totalGrossWithBonus}</td></tr>
+        <tr><th>Gross + SD Bonus</th><td>${results.grossSalDiff}</td></tr>
         <tr><th>GSIS PS</th><td>${results.gsisPshare}</td></tr>
         <tr><th>Less GSIS</th><td>${results.lessGsis}</td></tr>
         <tr><th>Tax</th><td>${results.withholdingTax}</td></tr>
@@ -170,7 +156,29 @@ function updateResults(results) {
     `;
 }
 
-// Debounce function to prevent too many rapid inputs
+function networkDays(startDate, endDate) {
+    let count = 0;
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+        const day = currentDate.getDay();
+        if (day !== 0 && day !== 6) { // Exclude weekends
+            count++;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return count;
+}
+
+function getFirstDayOfMonth(date) {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function getLastDayOfMonth(date) {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+}
+
 function debounce(func, wait) {
     let timeout;
     return function(...args) {
