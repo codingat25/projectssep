@@ -1,21 +1,3 @@
-document.getElementById('salaryForm').addEventListener('input', debounce(calculate, 300));
-
-const recalculateButton = document.getElementById('recalculateButton');
-const infoMessage = document.getElementById('infoMessage');
-
-// Reset form logic
-recalculateButton.addEventListener('click', () => {
-    document.getElementById('salaryForm').reset();
-    document.getElementById('resultsTable').getElementsByTagName('tbody')[0].innerHTML = '';
-    infoMessage.style.display = 'block';
-    recalculateButton.style.display = 'none';
-});
-
-// Utility function for formatting numbers
-function formatNumber(num) {
-    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
-}
-
 // Main calculation function
 function calculate() {
     try {
@@ -86,21 +68,28 @@ function calculate() {
 
 // Helper function to calculate the gross differential
 function calculateGrossDifferential(startDate, endDate, differentialAmount) {
+    const daysInMonth = 22; // Standard number of working days per month
+
     const businessDaysInFirstMonth = networkDays(startDate, getLastDayOfMonth(startDate));
     const businessDaysInSecondMonth = networkDays(getFirstDayOfMonth(endDate), endDate);
 
-    const fullMonths = getDifferenceInMonths(startDate, endDate) - 1;
-    const fullMonthDifferential = differentialAmount * fullMonths;
+    const startMonthDays = networkDays(startDate, getLastDayOfMonth(startDate));
+    const endMonthDays = networkDays(getFirstDayOfMonth(endDate), endDate);
 
     let partialMonthDifferential = 0;
+
     if (startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear()) {
         // Only one partial month
-        partialMonthDifferential = (differentialAmount / 22) * (businessDaysInFirstMonth + businessDaysInSecondMonth);
+        partialMonthDifferential = (differentialAmount / daysInMonth) * (businessDaysInFirstMonth);
     } else {
         // Two partial months
-        partialMonthDifferential = (differentialAmount / 22) * businessDaysInFirstMonth +
-                                   (differentialAmount / 22) * businessDaysInSecondMonth;
+        partialMonthDifferential = (differentialAmount / daysInMonth) * (businessDaysInFirstMonth) +
+                                   (differentialAmount / daysInMonth) * (businessDaysInSecondMonth);
     }
+
+    // Calculate full months differential
+    const fullMonths = getDifferenceInMonths(startDate, endDate) - (startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear() ? 0 : 1);
+    const fullMonthDifferential = differentialAmount * fullMonths;
 
     return partialMonthDifferential + fullMonthDifferential;
 }
