@@ -53,16 +53,16 @@ function calculate() {
             ? initialDifferentialAmount 
             : 0;
 
-        // Adjusted GSIS calculation
-        const gsisRate = 0.09;
-        const gsisPshare = (grossSalDiff + sdBonus) * gsisRate; // Revised calculation
+        // Calculate GSIS, Tax, Deductions, and Net
+        const totalGrossWithBonus = grossSalDiff + sdBonus;
+        const gsisPS = 0.09;
+        const gsisPshare = totalGrossWithBonus * gsisPS;
+        const lessGsis = totalGrossWithBonus - gsisPshare;
 
-        // Adjusted Tax percentage
         const taxPercentage = getTaxPercentage(properSalary * 12);
-        const lessGsis = (grossSalDiff + sdBonus) - gsisPshare;
         const withholdingTax = lessGsis * taxPercentage;
         const totalDeduction = gsisPshare + withholdingTax;
-        const netAmount = (grossSalDiff + sdBonus) - totalDeduction;
+        const netAmount = totalGrossWithBonus - totalDeduction;
 
         // Update results
         updateResults({
@@ -71,7 +71,7 @@ function calculate() {
             initialDifferentialAmount: formatNumber(initialDifferentialAmount),
             grossSalDiff: formatNumber(grossSalDiff),
             sdBonus: formatNumber(sdBonus),
-            totalGrossWithBonus: formatNumber(grossSalDiff + sdBonus),
+            totalGrossWithBonus: formatNumber(totalGrossWithBonus),
             gsisPshare: formatNumber(gsisPshare),
             lessGsis: formatNumber(lessGsis),
             withholdingTax: formatNumber(withholdingTax),
@@ -89,24 +89,20 @@ function calculateGrossDifferential(startDate, endDate, differentialAmount) {
     const businessDaysInFirstMonth = networkDays(startDate, getLastDayOfMonth(startDate));
     const businessDaysInSecondMonth = networkDays(getFirstDayOfMonth(endDate), endDate);
 
-    // Check if dates are in the same month
+    const fullMonths = getDifferenceInMonths(startDate, endDate) - 1;
+    const fullMonthDifferential = differentialAmount * fullMonths;
+
+    let partialMonthDifferential = 0;
     if (startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear()) {
-        // Both dates are in the same month
-        return (differentialAmount / 22) * businessDaysInFirstMonth;
+        // Only one partial month
+        partialMonthDifferential = (differentialAmount / 22) * (businessDaysInFirstMonth + businessDaysInSecondMonth);
     } else {
-        // Dates span multiple months
-        const fullMonths = getDifferenceInMonths(startDate, endDate) - 1;
-
-        // Calculate differential for partial months
-        const diffForFirstMonth = (differentialAmount / 22) * businessDaysInFirstMonth;
-        const diffForSecondMonth = (differentialAmount / 22) * businessDaysInSecondMonth;
-
-        // Calculate differential for full months
-        const diffForFullMonths = differentialAmount * fullMonths;
-
-        // Combine results
-        return diffForFirstMonth + diffForSecondMonth + diffForFullMonths;
+        // Two partial months
+        partialMonthDifferential = (differentialAmount / 22) * businessDaysInFirstMonth +
+                                   (differentialAmount / 22) * businessDaysInSecondMonth;
     }
+
+    return partialMonthDifferential + fullMonthDifferential;
 }
 
 // Helper function to calculate the number of months between two dates
@@ -185,7 +181,7 @@ function updateResults(results) {
     `;
 }
 
-// Debounce function to limit the rate of calls to calculate
+// Debounce function to prevent too many rapid inputs
 function debounce(func, wait) {
     let timeout;
     return function(...args) {
