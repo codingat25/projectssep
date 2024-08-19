@@ -53,12 +53,15 @@ function calculate() {
         const businessDaysSecondSegment = networkDays(getFirstDayOfMonth(secondDate), secondDate);
 
         let calculatedDifferential;
-        if (differenceInMonths === 1) {
-            // Formula for 1 month difference
-            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + (initialDifferentialAmount / 22 * businessDaysSecondSegment);
+        const salDiffPerDay = initialDifferentialAmount / 22;
+
+        if (differenceInMonths > 1) {
+            calculatedDifferential = (salDiffPerDay * businessDaysFirstSegment) + 
+                                     (salDiffPerDay * businessDaysSecondSegment) + 
+                                     (initialDifferentialAmount * differenceInMonths);
         } else {
-            // Formula for periods spanning more than one month
-            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + (initialDifferentialAmount / 22 * businessDaysSecondSegment) + (initialDifferentialAmount * differenceInMonths);
+            calculatedDifferential = (salDiffPerDay * businessDaysFirstSegment) + 
+                                     (salDiffPerDay * businessDaysSecondSegment);
         }
 
         const sdBonus = (midYearEligible(firstDate, secondDate) || yearEndEligible(firstDate, secondDate))
