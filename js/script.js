@@ -47,8 +47,19 @@ function calculate() {
 
         const initialDifferentialAmount = Math.max(0, properSalary - currentSalary);
         const differenceInMonths = getDifferenceInMonths(firstDate, secondDate);
+        const businessDaysFirstDate = getBusinessDaysInMonth(firstDate);
+        const businessDaysSecondDate = getBusinessDaysInMonth(secondDate);
 
-        const calculatedDifferential = initialDifferentialAmount * differenceInMonths;
+        let calculatedDifferential;
+        if (differenceInMonths === 1) {
+            // Special formula for 1 month difference
+            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstDate) +
+                                     (initialDifferentialAmount / 22 * businessDaysSecondDate);
+        } else {
+            // General formula
+            calculatedDifferential = initialDifferentialAmount * differenceInMonths;
+        }
+
         const sdBonus = (midYearEligible(firstDate, secondDate) || yearEndEligible(firstDate, secondDate))
             ? initialDifferentialAmount
             : 0;
@@ -100,6 +111,27 @@ function getDifferenceInMonths(startDate, endDate) {
     }
 
     return years * 12 + months + (days / 30);
+}
+
+function getBusinessDaysInMonth(date) {
+    // Get the number of business days in the month of the given date
+    const start = new Date(date.getFullYear(), date.getMonth(), 1);
+    const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    return networkDays(start, end);
+}
+
+function networkDays(startDate, endDate) {
+    let count = 0;
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+        if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) { // Monday to Friday
+            count++;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return count;
 }
 
 function midYearEligible(startDate, endDate) {
