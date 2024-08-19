@@ -131,3 +131,4 @@ function updateResults(results) {
         <tr><th>Daily Differential</th><td>${results.dailyDifferential}</td></tr>
     `;
 }
+//latest
