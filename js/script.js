@@ -88,6 +88,9 @@ function calculate() {
         const totalDeduction = gsisPshare + withholdingTax;
         const netAmount = grossSalDiff - totalDeduction;
 
+        // Calculate RLIP
+        const rlIP = calculateRLIP(initialDifferentialAmount);
+
         updateResults({
             currentSalary: formatNumber(currentSalary),
             properSalary: formatNumber(properSalary),
@@ -100,6 +103,7 @@ function calculate() {
             withholdingTax: formatNumber(withholdingTax),
             totalDeduction: formatNumber(totalDeduction),
             netAmount: formatNumber(netAmount),
+            rlIP: formatNumber(rlIP), // Include RLIP in results
         });
     } catch (error) {
         console.error(error.message);
@@ -146,6 +150,11 @@ function getTaxPercentage(annualSalary) {
     return 0.35;
 }
 
+function calculateRLIP(differentialAmount) {
+    const rlipRate = 0.02; // 2% RLIP
+    return differentialAmount * rlipRate;
+}
+
 function updateResults(results) {
     const resultsTable = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
     resultsTable.innerHTML = `
@@ -160,6 +169,7 @@ function updateResults(results) {
         <tr><th>Tax</th><td>${results.withholdingTax}</td></tr>
         <tr><th>Total Deduction</th><td>${results.totalDeduction}</td></tr>
         <tr><th>Net</th><td>${results.netAmount}</td></tr>
+        <tr><th>RLIP</th><td>${results.rlIP}</td></tr> <!-- New Row for RLIP -->
     `;
 }
 
