@@ -21,7 +21,7 @@ function calculate() {
     try {
         const currentSalary = parseFloat(document.getElementById('currentSalary').value.replace(/[^0-9.]/g, '')) || 0;
         const properSalary = parseFloat(document.getElementById('properSalary').value.replace(/[^0-9.]/g, '')) || 0;
-        
+
         const firstDateInput = document.getElementById('firstDate').value;
         const secondDateInput = document.getElementById('secondDate').value;
 
@@ -46,35 +46,43 @@ function calculate() {
         }
 
         const initialDifferentialAmount = Math.max(0, properSalary - currentSalary);
-        const differenceInMonths = getDifferenceInMonths(firstDate, secondDate);
 
-        // Calculate business days for each segment
+        // Calculate business days for the first and second month segments
         const businessDaysFirstSegment = networkDays(firstDate, getLastDayOfMonth(firstDate));
         const businessDaysSecondSegment = networkDays(getFirstDayOfMonth(secondDate), secondDate);
 
-        let calculatedDifferential;
+        // Determine the number of months between the two dates
+        const differenceInMonths = getDifferenceInMonths(firstDate, secondDate);
+
+        // Calculate Gross Differential based on the conditions
+        let grossSalDiff;
+
         if (differenceInMonths === 1) {
-            // Formula for 1 month difference
-            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + (initialDifferentialAmount / 22 * businessDaysSecondSegment);
+            // Single-month difference calculation
+            grossSalDiff = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + 
+                           (initialDifferentialAmount / 22 * businessDaysSecondSegment);
         } else {
-            // Formula for periods spanning more than one month
-            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + (initialDifferentialAmount / 22 * businessDaysSecondSegment) + (initialDifferentialAmount * (differenceInMonths - 1));
+            // More than one month difference calculation
+            grossSalDiff = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + 
+                           (initialDifferentialAmount / 22 * businessDaysSecondSegment) + 
+                           (initialDifferentialAmount * (differenceInMonths - 1));
         }
 
-        const sdBonus = (midYearEligible(firstDate, secondDate) || yearEndEligible(firstDate, secondDate))
-            ? initialDifferentialAmount
-            : 0;
+        // Calculate SD Bonus (if applicable)
+        const sdBonus = (midYearEligible(firstDate, secondDate) || yearEndEligible(firstDate, secondDate)) ? 
+            initialDifferentialAmount : 0;
 
-        const grossSalDiff = calculatedDifferential + sdBonus;
+        const totalGrossWithBonus = grossSalDiff + sdBonus;
+
+        // Continue with GSIS, tax, deductions, and net amount
         const gsisPS = 0.09;
-
         const gsisPshare = initialDifferentialAmount * differenceInMonths * gsisPS;
-        const lessGsis = grossSalDiff - gsisPshare;
+        const lessGsis = totalGrossWithBonus - gsisPshare;
 
         const taxPercentage = getTaxPercentage(properSalary * 12);
         const withholdingTax = lessGsis * taxPercentage;
         const totalDeduction = gsisPshare + withholdingTax;
-        const netAmount = grossSalDiff - totalDeduction;
+        const netAmount = totalGrossWithBonus - totalDeduction;
 
         updateResults({
             currentSalary: formatNumber(currentSalary),
@@ -82,6 +90,7 @@ function calculate() {
             initialDifferentialAmount: formatNumber(initialDifferentialAmount),
             grossSalDiff: formatNumber(grossSalDiff),
             sdBonus: formatNumber(sdBonus),
+            totalGrossWithBonus: formatNumber(totalGrossWithBonus),
             gsisPshare: formatNumber(gsisPshare),
             lessGsis: formatNumber(lessGsis),
             withholdingTax: formatNumber(withholdingTax),
@@ -93,6 +102,7 @@ function calculate() {
         alert(`An error occurred: ${error.message}`);
     }
 }
+
 
 function getDifferenceInMonths(startDate, endDate) {
     if (!startDate || !endDate) return 0;
