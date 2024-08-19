@@ -57,7 +57,7 @@ function calculate() {
             // Special formula for 1 month difference
             calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + (initialDifferentialAmount / 22 * businessDaysSecondSegment);
         } else {
-            // General formula
+            // General formula for periods spanning more than one month
             calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + (initialDifferentialAmount / 22 * businessDaysSecondSegment) + (initialDifferentialAmount * differenceInMonths);
         }
 
@@ -114,28 +114,6 @@ function getDifferenceInMonths(startDate, endDate) {
     return years * 12 + months + (days / 30);
 }
 
-function networkDays(startDate, endDate) {
-    let count = 0;
-    let currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-        if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) { // Monday to Friday
-            count++;
-        }
-        currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    return count;
-}
-
-function getFirstDayOfMonth(date) {
-    return new Date(date.getFullYear(), date.getMonth(), 1);
-}
-
-function getLastDayOfMonth(date) {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0);
-}
-
 function midYearEligible(startDate, endDate) {
     const midYearDate = new Date(`05/15/${startDate.getFullYear()}`);
     return startDate <= midYearDate && endDate >= midYearDate;
@@ -170,6 +148,29 @@ function updateResults(results) {
         <tr><th>Total Deduction</th><td>${results.totalDeduction}</td></tr>
         <tr><th>Net</th><td>${results.netAmount}</td></tr>
     `;
+}
+
+function networkDays(startDate, endDate) {
+    let count = 0;
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+        const day = currentDate.getDay();
+        if (day !== 0 && day !== 6) { // Monday to Friday
+            count++;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return count;
+}
+
+function getFirstDayOfMonth(date) {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function getLastDayOfMonth(date) {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 }
 
 function debounce(func, wait) {
