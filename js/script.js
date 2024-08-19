@@ -21,7 +21,7 @@ function calculate() {
     try {
         const currentSalary = parseFloat(document.getElementById('currentSalary').value.replace(/[^0-9.]/g, '')) || 0;
         const properSalary = parseFloat(document.getElementById('properSalary').value.replace(/[^0-9.]/g, '')) || 0;
-
+        
         const firstDateInput = document.getElementById('firstDate').value;
         const secondDateInput = document.getElementById('secondDate').value;
 
@@ -53,15 +53,12 @@ function calculate() {
         const businessDaysSecondSegment = networkDays(getFirstDayOfMonth(secondDate), secondDate);
 
         let calculatedDifferential;
-        if (differenceInMonths <= 1) {
-            // If the difference is less than or equal to 1 month
-            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) 
-                                   + (initialDifferentialAmount / 22 * businessDaysSecondSegment);
+        if (differenceInMonths === 1) {
+            // Formula for 1 month difference
+            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + (initialDifferentialAmount / 22 * businessDaysSecondSegment);
         } else {
-            // If the difference spans more than one month
-            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) 
-                                   + (initialDifferentialAmount / 22 * businessDaysSecondSegment) 
-                                   + (initialDifferentialAmount * (differenceInMonths - 1));
+            // Formula for periods spanning more than one month
+            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + (initialDifferentialAmount / 22 * businessDaysSecondSegment) + (initialDifferentialAmount * (differenceInMonths - 1));
         }
 
         const sdBonus = (midYearEligible(firstDate, secondDate) || yearEndEligible(firstDate, secondDate))
@@ -114,7 +111,7 @@ function getDifferenceInMonths(startDate, endDate) {
         months += 12;
     }
 
-    return years * 12 + months + (days / 30);
+    return years * 12 + months + (days / 30); // Approximate month fraction for partial months
 }
 
 function midYearEligible(startDate, endDate) {
@@ -159,7 +156,7 @@ function networkDays(startDate, endDate) {
 
     while (currentDate <= endDate) {
         const day = currentDate.getDay();
-        if (day !== 0 && day !== 6) { // Exclude weekends
+        if (day !== 0 && day !== 6) { // Monday to Friday
             count++;
         }
         currentDate.setDate(currentDate.getDate() + 1);
