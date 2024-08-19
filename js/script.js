@@ -46,23 +46,7 @@ function calculate() {
         }
 
         const initialDifferentialAmount = Math.max(0, properSalary - currentSalary);
-        const differenceInMonths = getDifferenceInMonths(firstDate, secondDate);
-
-        // Calculate Gross Differential
-        const businessDaysInFirstMonth = networkDays(firstDate, getLastDayOfMonth(firstDate));
-        const businessDaysInSecondMonth = networkDays(getFirstDayOfMonth(secondDate), secondDate);
-
-        let grossSalDiff;
-
-        if (differenceInMonths === 1) {
-            grossSalDiff = (initialDifferentialAmount / 22 * businessDaysInFirstMonth) + 
-                           (initialDifferentialAmount / 22 * businessDaysInSecondMonth);
-        } else {
-            const fullMonths = differenceInMonths - 1;
-            grossSalDiff = (initialDifferentialAmount / 22 * businessDaysInFirstMonth) + 
-                           (initialDifferentialAmount / 22 * businessDaysInSecondMonth) + 
-                           (initialDifferentialAmount * fullMonths);
-        }
+        let grossSalDiff = calculateGrossDifferential(firstDate, secondDate, initialDifferentialAmount);
 
         // Calculate SD Bonus
         const sdBonus = (midYearEligible(firstDate, secondDate) || yearEndEligible(firstDate, secondDate)) 
@@ -72,7 +56,7 @@ function calculate() {
         // Calculate GSIS, Tax, Deductions, and Net
         const totalGrossWithBonus = grossSalDiff + sdBonus;
         const gsisPS = 0.09;
-        const gsisPshare = initialDifferentialAmount * differenceInMonths * gsisPS;
+        const gsisPshare = totalGrossWithBonus * gsisPS;
         const lessGsis = totalGrossWithBonus - gsisPshare;
 
         const taxPercentage = getTaxPercentage(properSalary * 12);
@@ -100,22 +84,28 @@ function calculate() {
     }
 }
 
+function calculateGrossDifferential(startDate, endDate, differentialAmount) {
+    const businessDaysInFirstMonth = networkDays(startDate, getLastDayOfMonth(startDate));
+    const businessDaysInSecondMonth = networkDays(getFirstDayOfMonth(endDate), endDate);
+
+    if (startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear()) {
+        return (differentialAmount / 22) * (businessDaysInFirstMonth + businessDaysInSecondMonth);
+    } else {
+        const fullMonths = getDifferenceInMonths(startDate, endDate) - 1;
+        return (differentialAmount / 22) * businessDaysInFirstMonth +
+               (differentialAmount / 22) * businessDaysInSecondMonth +
+               (differentialAmount * fullMonths);
+    }
+}
+
 function getDifferenceInMonths(startDate, endDate) {
     let years = endDate.getFullYear() - startDate.getFullYear();
     let months = endDate.getMonth() - startDate.getMonth();
-    let days = endDate.getDate() - startDate.getDate();
-
-    if (days < 0) {
-        months -= 1;
-        days += new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).getDate();
-    }
-
     if (months < 0) {
         years -= 1;
         months += 12;
     }
-
-    return years * 12 + months + (days / 30);
+    return years * 12 + months;
 }
 
 function midYearEligible(startDate, endDate) {
@@ -129,12 +119,12 @@ function yearEndEligible(startDate, endDate) {
 }
 
 function getTaxPercentage(annualSalary) {
-    if (annualSalary <= 282612) return 0;
-    if (annualSalary >= 282613 && annualSalary < 451944) return 0.15;
-    if (annualSalary >= 451945 && annualSalary <= 890772) return 0.20;
-    if (annualSalary >= 890773 && annualSalary <= 1185804) return 0.25;
-    if (annualSalary >= 1185805 && annualSalary <= 8000000) return 0.30;
-    return 0.35;
+    if (annualSalary <= 250000) return 0;
+    if (annualSalary >= 250001 && annualSalary < 400000) return 0.15;
+    if (annualSalary >= 400001 and annualSalary <= 800000) return 0.20;
+    if (annualSalary >= 800001 and annualSalary <= 2000000) return 0.25;
+    if (annualSalary >= 2000001 and annualSalary <= 8000000) return 0.30;
+    return 0.32;
 }
 
 function updateResults(results) {
