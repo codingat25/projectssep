@@ -21,7 +21,7 @@ function calculate() {
     try {
         const currentSalary = parseFloat(document.getElementById('currentSalary').value.replace(/[^0-9.]/g, '')) || 0;
         const properSalary = parseFloat(document.getElementById('properSalary').value.replace(/[^0-9.]/g, '')) || 0;
-        
+
         const firstDateInput = document.getElementById('firstDate').value;
         const secondDateInput = document.getElementById('secondDate').value;
 
@@ -46,34 +46,29 @@ function calculate() {
         }
 
         const initialDifferentialAmount = Math.max(0, properSalary - currentSalary);
-        const salDiffPerDay = initialDifferentialAmount / 22;
-
-        const firstPeriodEndDate = new Date(getLastDayOfMonth(firstDate));
-        const secondPeriodStartDate = new Date(getFirstDayOfMonth(secondDate));
-        const businessDaysFirstPeriod = networkDays(firstDate, firstPeriodEndDate);
-        const businessDaysSecondPeriod = networkDays(secondPeriodStartDate, secondDate);
-
-        let calculatedDifferential = 0;
-
-        if (firstDate.getMonth() === secondDate.getMonth() && firstDate.getFullYear() === secondDate.getFullYear()) {
-            // Same month
-            calculatedDifferential = salDiffPerDay * networkDays(firstDate, secondDate);
-        } else {
-            // Different months
-            const diffFirstPeriod = salDiffPerDay * businessDaysFirstPeriod;
-            const diffSecondPeriod = salDiffPerDay * businessDaysSecondPeriod;
-            calculatedDifferential = diffFirstPeriod + diffSecondPeriod;
-        }
-
-        // Include full months differential if applicable
         const differenceInMonths = getDifferenceInMonths(firstDate, secondDate);
-        const monthlyDifferential = initialDifferentialAmount * differenceInMonths;
+
+        // Calculate business days for each segment
+        const businessDaysFirstSegment = networkDays(firstDate, getLastDayOfMonth(firstDate));
+        const businessDaysSecondSegment = networkDays(getFirstDayOfMonth(secondDate), secondDate);
+
+        let calculatedDifferential;
+        if (differenceInMonths <= 1) {
+            // If the difference is less than or equal to 1 month
+            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) 
+                                   + (initialDifferentialAmount / 22 * businessDaysSecondSegment);
+        } else {
+            // If the difference spans more than one month
+            calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) 
+                                   + (initialDifferentialAmount / 22 * businessDaysSecondSegment) 
+                                   + (initialDifferentialAmount * (differenceInMonths - 1));
+        }
 
         const sdBonus = (midYearEligible(firstDate, secondDate) || yearEndEligible(firstDate, secondDate))
             ? initialDifferentialAmount
             : 0;
 
-        const grossSalDiff = calculatedDifferential + sdBonus + monthlyDifferential;
+        const grossSalDiff = calculatedDifferential + sdBonus;
         const gsisPS = 0.09;
 
         const gsisPshare = initialDifferentialAmount * differenceInMonths * gsisPS;
