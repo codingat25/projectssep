@@ -74,13 +74,13 @@ function calculate() {
         const grossSalDiff = partialMonthDifferential + monthlyDifferential;
 
         // Define SD Bonus (e.g., 10% of the initial differential amount)
-        const sdBonus = initialDifferentialAmount * 0.10; // Adjust percentage as needed
+        const sdBonus = getSdBonus(firstDate, secondDate, initialDifferentialAmount);
 
         // Gross + SD Bonus
         const grossPlusSdBonus = grossSalDiff + sdBonus;
 
         const gsisPS = 0.09;
-        const gsisPshare = initialDifferentialAmount * differenceInMonths * gsisPS;
+        const gsisPshare = grossSalDiff * gsisPS;
         const lessGsis = grossSalDiff - gsisPshare;
 
         const taxPercentage = getTaxPercentage(properSalary * 12);
@@ -88,8 +88,8 @@ function calculate() {
         const totalDeduction = gsisPshare + withholdingTax;
         const netAmount = grossSalDiff - totalDeduction;
 
-        // Calculate RLIP
-        const rlIP = calculateRLIP(initialDifferentialAmount);
+        // Calculate RLIP (same as GSIS PS but with 12% rate)
+        const rlIP = grossSalDiff * 0.12;
 
         updateResults({
             currentSalary: formatNumber(currentSalary),
@@ -131,14 +131,18 @@ function getDifferenceInMonths(startDate, endDate) {
     return years * 12 + months + (days / 30);
 }
 
-function midYearEligible(startDate, endDate) {
+function getSdBonus(startDate, endDate, differentialAmount) {
     const midYearDate = new Date(`05/15/${startDate.getFullYear()}`);
-    return startDate <= midYearDate && endDate >= midYearDate;
-}
-
-function yearEndEligible(startDate, endDate) {
     const yearEndDate = new Date(`10/31/${startDate.getFullYear()}`);
-    return startDate <= yearEndDate && endDate >= yearEndDate;
+    
+    const eligibleMidYear = startDate <= midYearDate && endDate >= midYearDate;
+    const eligibleYearEnd = startDate <= yearEndDate && endDate >= yearEndDate;
+    
+    let bonus = 0;
+    if (eligibleMidYear) bonus += differentialAmount;
+    if (eligibleYearEnd) bonus += differentialAmount;
+    
+    return bonus;
 }
 
 function getTaxPercentage(annualSalary) {
@@ -148,11 +152,6 @@ function getTaxPercentage(annualSalary) {
     if (annualSalary >= 890773 && annualSalary <= 1185804) return 0.25;
     if (annualSalary >= 1185805 && annualSalary <= 8000000) return 0.30;
     return 0.35;
-}
-
-function calculateRLIP(differentialAmount) {
-    const rlipRate = 0.02; // 2% RLIP
-    return differentialAmount * rlipRate;
 }
 
 function updateResults(results) {
@@ -199,7 +198,15 @@ function getLastDayOfMonth(date) {
 function debounce(func, wait) {
     let timeout;
     return function(...args) {
+        clearTimeout
+
+
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(this, args), wait);
     };
+}
+    }
 }
