@@ -48,16 +48,16 @@ function calculate() {
         const initialDifferentialAmount = Math.max(0, properSalary - currentSalary);
         const differenceInMonths = getDifferenceInMonths(firstDate, secondDate);
 
-        // Calculate business days for first and second segments
+        // Calculate business days for each segment
         const businessDaysFirstSegment = networkDays(firstDate, getLastDayOfMonth(firstDate));
         const businessDaysSecondSegment = networkDays(getFirstDayOfMonth(secondDate), secondDate);
 
         let calculatedDifferential;
         if (differenceInMonths === 1) {
-            // Special formula for 1 month difference
+            // Formula for 1 month difference
             calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + (initialDifferentialAmount / 22 * businessDaysSecondSegment);
         } else {
-            // General formula for periods spanning more than one month
+            // Formula for periods spanning more than one month
             calculatedDifferential = (initialDifferentialAmount / 22 * businessDaysFirstSegment) + (initialDifferentialAmount / 22 * businessDaysSecondSegment) + (initialDifferentialAmount * differenceInMonths);
         }
 
