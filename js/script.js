@@ -73,6 +73,12 @@ function calculate() {
         // Gross Differential
         const grossSalDiff = partialMonthDifferential + monthlyDifferential;
 
+        // Define SD Bonus (e.g., 10% of the initial differential amount)
+        const sdBonus = initialDifferentialAmount * 0.10; // Adjust percentage as needed
+
+        // Gross + SD Bonus
+        const grossPlusSdBonus = grossSalDiff + sdBonus;
+
         const gsisPS = 0.09;
         const gsisPshare = initialDifferentialAmount * differenceInMonths * gsisPS;
         const lessGsis = grossSalDiff - gsisPshare;
@@ -88,6 +94,7 @@ function calculate() {
             initialDifferentialAmount: formatNumber(initialDifferentialAmount),
             grossSalDiff: formatNumber(grossSalDiff),
             sdBonus: formatNumber(sdBonus),
+            grossPlusSdBonus: formatNumber(grossPlusSdBonus),
             gsisPshare: formatNumber(gsisPshare),
             lessGsis: formatNumber(lessGsis),
             withholdingTax: formatNumber(withholdingTax),
@@ -147,7 +154,7 @@ function updateResults(results) {
         <tr><th>Difference</th><td>${results.initialDifferentialAmount}</td></tr>
         <tr><th>Gross Differential</th><td>${results.grossSalDiff}</td></tr>
         <tr><th>SD Bonus</th><td>${results.sdBonus}</td></tr>
-        <tr><th>Gross + SD Bonus</th><td>${results.grossSalDiff}</td></tr>
+        <tr><th>Gross + SD Bonus</th><td>${results.grossPlusSdBonus}</td></tr>
         <tr><th>GSIS PS</th><td>${results.gsisPshare}</td></tr>
         <tr><th>Less GSIS</th><td>${results.lessGsis}</td></tr>
         <tr><th>Tax</th><td>${results.withholdingTax}</td></tr>
