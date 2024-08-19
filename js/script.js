@@ -55,7 +55,7 @@ function calculate() {
 
         // Calculate GSIS, Tax, Deductions, and Net
         const totalGrossWithBonus = grossSalDiff + sdBonus;
-        const gsisPS = 0.09; // GSIS PS percentage
+        const gsisPS = 0.09;
         const gsisPshare = totalGrossWithBonus * gsisPS;
         const lessGsis = totalGrossWithBonus - gsisPshare;
 
@@ -86,20 +86,27 @@ function calculate() {
 
 // Helper function to calculate the gross differential
 function calculateGrossDifferential(startDate, endDate, differentialAmount) {
+    // Calculate business days in partial months
     const businessDaysInFirstMonth = networkDays(startDate, getLastDayOfMonth(startDate));
     const businessDaysInSecondMonth = networkDays(getFirstDayOfMonth(endDate), endDate);
-    
-    const totalBusinessDays = businessDaysInFirstMonth + businessDaysInSecondMonth;
-    
+
+    // Check if dates are in the same month
     if (startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear()) {
-        // Within the same month
-        return (differentialAmount / 22) * totalBusinessDays;
+        // Both dates are in the same month
+        return (differentialAmount / 22) * businessDaysInFirstMonth;
     } else {
-        // Across different months
+        // Dates span multiple months
         const fullMonths = getDifferenceInMonths(startDate, endDate) - 1;
-        const diffForPartialMonths = (differentialAmount / 22) * (businessDaysInFirstMonth + businessDaysInSecondMonth);
+
+        // Calculate differential for partial months
+        const diffForFirstMonth = (differentialAmount / 22) * businessDaysInFirstMonth;
+        const diffForSecondMonth = (differentialAmount / 22) * businessDaysInSecondMonth;
+
+        // Calculate differential for full months
         const diffForFullMonths = differentialAmount * fullMonths;
-        return diffForPartialMonths + diffForFullMonths;
+
+        // Combine results
+        return diffForFirstMonth + diffForSecondMonth + diffForFullMonths;
     }
 }
 
@@ -154,10 +161,10 @@ function yearEndEligible(startDate, endDate) {
 // Function to get tax percentage based on annual salary
 function getTaxPercentage(annualSalary) {
     if (annualSalary <= 282612) return 0;
-    if (annualSalary <= 451944) return 0.15;
-    if (annualSalary <= 890772) return 0.20;
-    if (annualSalary <= 1185804) return 0.25;
-    if (annualSalary <= 8000000) return 0.30;
+    if (annualSalary >= 282613 && annualSalary < 451944) return 0.15;
+    if (annualSalary >= 451945 && annualSalary <= 890772) return 0.20;
+    if (annualSalary >= 890773 && annualSalary <= 1185804) return 0.25;
+    if (annualSalary >= 1185805 && annualSalary <= 8000000) return 0.30;
     return 0.35;
 }
 
