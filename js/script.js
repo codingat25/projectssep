@@ -43,16 +43,20 @@ function calculate() {
         }
 
         const initialDifferentialAmount = properSalary - currentSalary;
+        const dailyDifferential = initialDifferentialAmount / 22;
 
-        // Calculate business days for each segment
+        // Business days calculations
         const businessDaysFirstSegment = networkDays(firstDate, getLastDayOfMonth(firstDate));
         const businessDaysSecondSegment = networkDays(getFirstDayOfMonth(secondDate), secondDate);
 
-        // Corrected Gross Differential Calculation
-        const dailyDifferential = initialDifferentialAmount / 22;
-        const grossDifferential = (dailyDifferential * businessDaysFirstSegment) + (dailyDifferential * businessDaysSecondSegment);
+        console.log(`Daily Differential: ${dailyDifferential}`);
+        console.log(`Business Days First Segment: ${businessDaysFirstSegment}`);
+        console.log(`Business Days Second Segment: ${businessDaysSecondSegment}`);
 
-        // Update the result table
+        // Calculate gross differential
+        const grossDifferential = (dailyDifferential * businessDaysFirstSegment) + (dailyDifferential * businessDaysSecondSegment);
+        
+        // Update results
         updateResults({
             currentSalary: formatNumber(currentSalary),
             properSalary: formatNumber(properSalary),
@@ -67,6 +71,22 @@ function calculate() {
         alert(`An error occurred: ${error.message}`);
     }
 }
+
+function networkDays(startDate, endDate) {
+    let count = 0;
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+        const day = currentDate.getDay();
+        if (day !== 0 && day !== 6) { // Monday to Friday
+            count++;
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return count;
+}
+
 
 function networkDays(startDate, endDate) {
     let count = 0;
