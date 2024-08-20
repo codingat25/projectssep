@@ -3,21 +3,25 @@ document.getElementById('salaryForm').addEventListener('input', debounce(calcula
 function calculate() {
     try {
         // Get inputs
-        const currentSalary = parseFloat(document.getElementById('currentSalary').value.replace(/[^0-9.]/g, '')) || 0;
-        const properSalary = parseFloat(document.getElementById('properSalary').value.replace(/[^0-9.]/g, '')) || 0;
-        const firstDate = new Date(document.getElementById('firstDate').value);
-        const secondDate = new Date(document.getElementById('secondDate').value);
+        const currentSalaryInput = document.getElementById('currentSalary').value;
+        const properSalaryInput = document.getElementById('properSalary').value;
+        const firstDateInput = document.getElementById('firstDate').value;
+        const secondDateInput = document.getElementById('secondDate').value;
+
+        // Convert inputs to proper types
+        const currentSalary = parseFloat(currentSalaryInput.replace(/[^0-9.]/g, '')) || 0;
+        const properSalary = parseFloat(properSalaryInput.replace(/[^0-9.]/g, '')) || 0;
+        const firstDate = new Date(firstDateInput);
+        const secondDate = new Date(secondDateInput);
 
         // Check for valid inputs
-        if (!currentSalary || !properSalary || isNaN(firstDate.getTime()) || isNaN(secondDate.getTime())) {
-            alert("Please provide valid inputs.");
-            return;
+        if (!currentSalaryInput || !properSalaryInput || !firstDateInput || !secondDateInput || isNaN(firstDate.getTime()) || isNaN(secondDate.getTime())) {
+            return alert("Please provide valid inputs.");
         }
 
         // Validate date range
         if (firstDate > secondDate) {
-            alert("End Date must be later than Start Date.");
-            return;
+            return alert("End Date must be later than Start Date.");
         }
 
         // Calculate differential amount and per day basis
@@ -73,7 +77,6 @@ function calculate() {
 // Helper functions
 
 function calculatePartialMonth(firstDate, secondDate, dailyDifferential) {
-    // Calculate partial month differentials for both start and end months
     const firstPeriodEnd = getLastDayOfMonth(firstDate);
     const businessDaysInFirstPeriod = networkDays(firstDate, firstPeriodEnd);
 
@@ -129,12 +132,7 @@ function getFirstDayOfMonth(date) {
 }
 
 function getTaxPercentage(annualSalary) {
-    if (annualSalary <= 282612) return 0;
-    if (annualSalary >= 282613 && annualSalary < 451944) return 0.15;
-    if (annualSalary >= 451945 && annualSalary <= 890772) return 0.20;
-    if (annualSalary >= 890773 && annualSalary <= 1185804) return 0.25;
-    if (annualSalary >= 1185805 && annualSalary <= 8000000) return 0.30;
-    return 0.35;
+    return annualSalary > 1000000 ? 0.32 : 0.20;
 }
 
 function formatNumber(num) {
