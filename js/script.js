@@ -1,79 +1,79 @@
 document.getElementById('salaryForm').addEventListener('input', debounce(calculate, 300));
 
 function calculate() {
-    try {
-        // Get inputs
-        const currentSalaryInput = document.getElementById('currentSalary').value;
-        const properSalaryInput = document.getElementById('properSalary').value;
-        const firstDateInput = document.getElementById('firstDate').value;
-        const secondDateInput = document.getElementById('secondDate').value;
+    // Get inputs
+    const currentSalaryInput = document.getElementById('currentSalary').value;
+    const properSalaryInput = document.getElementById('properSalary').value;
+    const firstDateInput = document.getElementById('firstDate').value;
+    const secondDateInput = document.getElementById('secondDate').value;
 
-        // Convert inputs to proper types
-        const currentSalary = parseFloat(currentSalaryInput.replace(/[^0-9.]/g, '')) || 0;
-        const properSalary = parseFloat(properSalaryInput.replace(/[^0-9.]/g, '')) || 0;
-        const firstDate = new Date(firstDateInput);
-        const secondDate = new Date(secondDateInput);
+    // Convert inputs to proper types and validate
+    const currentSalary = parseFloat(currentSalaryInput);
+    const properSalary = parseFloat(properSalaryInput);
+    const firstDate = new Date(firstDateInput);
+    const secondDate = new Date(secondDateInput);
 
-        // Check for valid inputs
-        if (!currentSalaryInput || !properSalaryInput || !firstDateInput || !secondDateInput || isNaN(firstDate.getTime()) || isNaN(secondDate.getTime())) {
-            return alert("Please provide valid inputs.");
-        }
-
-        // Validate date range
-        if (firstDate > secondDate) {
-            return alert("End Date must be later than Start Date.");
-        }
-
-        // Calculate differential amount and per day basis
-        const initialDifferentialAmount = properSalary - currentSalary;
-        const dailyDifferential = initialDifferentialAmount / 22; // Assumed 22 working days in a month
-
-        // Business days and partial month calculations
-        const partialMonthDifferential = calculatePartialMonth(firstDate, secondDate, dailyDifferential);
-
-        // Full months differential
-        const fullMonthsDiff = getFullMonthsDifferential(firstDate, secondDate, initialDifferentialAmount);
-
-        // Gross Differential
-        const grossDifferential = partialMonthDifferential + fullMonthsDiff;
-
-        // SD Bonus calculation
-        const sdBonus = calculateSdBonus(firstDate, secondDate, initialDifferentialAmount);
-
-        // Gross + SD Bonus
-        const grossPlusBonus = grossDifferential + sdBonus;
-
-        // GSIS PS share and deductions
-        const gsisShare = grossPlusBonus * 0.09;
-        const lessGsis = grossPlusBonus - gsisShare;
-
-        // Tax calculation
-        const taxPercentage = getTaxPercentage(properSalary * 12);
-        const withholdingTax = lessGsis * taxPercentage;
-        const totalDeduction = gsisShare + withholdingTax;
-
-        // Net Amount
-        const netAmount = grossPlusBonus - totalDeduction;
-
-        // Update results in the table
-        updateResults({
-            currentSalary: formatNumber(currentSalary),
-            properSalary: formatNumber(properSalary),
-            initialDifferentialAmount: formatNumber(initialDifferentialAmount),
-            grossDifferential: formatNumber(grossDifferential),
-            sdBonus: formatNumber(sdBonus),
-            grossPlusBonus: formatNumber(grossPlusBonus),
-            gsisShare: formatNumber(gsisShare),
-            withholdingTax: formatNumber(withholdingTax),
-            totalDeduction: formatNumber(totalDeduction),
-            netAmount: formatNumber(netAmount)
-        });
-    } catch (error) {
-        console.error("Error in calculation:", error);
-        alert("Error in calculation. Please check the inputs.");
+    // Validation checks
+    if (isNaN(currentSalary) || isNaN(properSalary)) {
+        alert("Please provide valid salary inputs.");
+        return;
     }
-}
 
+    if (firstDate.toString() === "Invalid Date" || secondDate.toString() === "Invalid Date") {
+        alert("Please provide valid date inputs.");
+        return;
+    }
+
+    if (firstDate > secondDate) {
+        alert("End Date must be later than Start Date.");
+        return;
+    }
+
+    // Calculate differential amount and per day basis
+    const initialDifferentialAmount = properSalary - currentSalary;
+    const dailyDifferential = initialDifferentialAmount / 22; // Assumed 22 working days in a month
+
+    // Business days and partial month calculations
+    const partialMonthDifferential = calculatePartialMonth(firstDate, secondDate, dailyDifferential);
+
+    // Full months differential
+    const fullMonthsDiff = getFullMonthsDifferential(firstDate, secondDate, initialDifferentialAmount);
+
+    // Gross Differential
+    const grossDifferential = partialMonthDifferential + fullMonthsDiff;
+
+    // SD Bonus calculation
+    const sdBonus = calculateSdBonus(firstDate, secondDate, initialDifferentialAmount);
+
+    // Gross + SD Bonus
+    const grossPlusBonus = grossDifferential + sdBonus;
+
+    // GSIS PS share and deductions
+    const gsisShare = grossPlusBonus * 0.09;
+    const lessGsis = grossPlusBonus - gsisShare;
+
+    // Tax calculation
+    const taxPercentage = getTaxPercentage(properSalary * 12);
+    const withholdingTax = lessGsis * taxPercentage;
+    const totalDeduction = gsisShare + withholdingTax;
+
+    // Net Amount
+    const netAmount = grossPlusBonus - totalDeduction;
+
+    // Update results in the table
+    updateResults({
+        currentSalary: formatNumber(currentSalary),
+        properSalary: formatNumber(properSalary),
+        initialDifferentialAmount: formatNumber(initialDifferentialAmount),
+        grossDifferential: formatNumber(grossDifferential),
+        sdBonus: formatNumber(sdBonus),
+        grossPlusBonus: formatNumber(grossPlusBonus),
+        gsisShare: formatNumber(gsisShare),
+        withholdingTax: formatNumber(withholdingTax),
+        totalDeduction: formatNumber(totalDeduction),
+        netAmount: formatNumber(netAmount)
+    });
+}
 // Helper functions
 
 function calculatePartialMonth(firstDate, secondDate, dailyDifferential) {
