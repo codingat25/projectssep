@@ -73,8 +73,11 @@ function calculate() {
         // Gross Differential
         const grossSalDiff = partialMonthDifferential + monthlyDifferential;
 
-        // Define SD Bonus (e.g., 10% of the initial differential amount)
-        const sdBonus = getSdBonus(firstDate, secondDate, initialDifferentialAmount);
+        // Define SD Bonus based on eligibility
+        const isMidYearEligible = midYearEligible(firstDate, secondDate);
+        const isYearEndEligible = yearEndEligible(firstDate, secondDate);
+        const sdBonus = (isMidYearEligible && isYearEndEligible) ? initialDifferentialAmount * 2 : 
+                        (isMidYearEligible || isYearEndEligible) ? initialDifferentialAmount : 0;
 
         // Gross + SD Bonus
         const grossPlusSdBonus = grossSalDiff + sdBonus;
@@ -86,10 +89,7 @@ function calculate() {
         const taxPercentage = getTaxPercentage(properSalary * 12);
         const withholdingTax = lessGsis * taxPercentage;
         const totalDeduction = gsisPshare + withholdingTax;
-        const netAmount = grossSalDiff - totalDeduction;
-
-        // Calculate RLIP (12%)
-        const rlIP = grossSalDiff * 0.12; // 12% RLIP
+        const netAmount = grossPlusSdBonus - totalDeduction;
 
         updateResults({
             currentSalary: formatNumber(currentSalary),
@@ -103,28 +103,12 @@ function calculate() {
             withholdingTax: formatNumber(withholdingTax),
             totalDeduction: formatNumber(totalDeduction),
             netAmount: formatNumber(netAmount),
-            rlIP: formatNumber(rlIP), // Updated RLIP calculation
         });
     } catch (error) {
         console.error(error.message);
         alert(`An error occurred: ${error.message}`);
     }
 }
-
-function getSdBonus(startDate, endDate, differentialAmount) {
-    const midYearDate = new Date(`05/15/${startDate.getFullYear()}`);
-    const yearEndDate = new Date(`10/31/${startDate.getFullYear()}`);
-    
-    let bonus = 0;
-    if (startDate <= midYearDate && endDate >= midYearDate) {
-        bonus += differentialAmount; // Mid-year bonus
-    }
-    if (startDate <= yearEndDate && endDate >= yearEndDate) {
-        bonus += differentialAmount; // Year-end bonus
-    }
-    return bonus;
-}
-
 
 function getDifferenceInMonths(startDate, endDate) {
     if (!startDate || !endDate) return 0;
@@ -143,23 +127,17 @@ function getDifferenceInMonths(startDate, endDate) {
         months += 12;
     }
 
-    return years * 12 + months;
+    return years * 12 + months + (days / 30);
 }
 
-function getSdBonus(startDate, endDate, differentialAmount) {
+function midYearEligible(startDate, endDate) {
     const midYearDate = new Date(`05/15/${startDate.getFullYear()}`);
+    return startDate <= midYearDate && endDate >= midYearDate;
+}
+
+function yearEndEligible(startDate, endDate) {
     const yearEndDate = new Date(`10/31/${startDate.getFullYear()}`);
-    let bonus = 0;
-
-    if (startDate <= midYearDate && endDate >= midYearDate) {
-        bonus += differentialAmount;
-    }
-
-    if (startDate <= yearEndDate && endDate >= yearEndDate) {
-        bonus += differentialAmount;
-    }
-
-    return bonus;
+    return startDate <= yearEndDate && endDate >= yearEndDate;
 }
 
 function getTaxPercentage(annualSalary) {
@@ -169,11 +147,6 @@ function getTaxPercentage(annualSalary) {
     if (annualSalary >= 890773 && annualSalary <= 1185804) return 0.25;
     if (annualSalary >= 1185805 && annualSalary <= 8000000) return 0.30;
     return 0.35;
-}
-
-function calculateRLIP(differentialAmount) {
-    const rlipRate = 0.12; // 12% RLIP
-    return differentialAmount * rlipRate;
 }
 
 function updateResults(results) {
@@ -190,7 +163,6 @@ function updateResults(results) {
         <tr><th>Tax</th><td>${results.withholdingTax}</td></tr>
         <tr><th>Total Deduction</th><td>${results.totalDeduction}</td></tr>
         <tr><th>Net</th><td>${results.netAmount}</td></tr>
-        <tr><th>RLIP</th><td>${results.rlIP}</td></tr>
     `;
 }
 
@@ -217,10 +189,10 @@ function getLastDayOfMonth(date) {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 }
 
-function debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
+function debounce(func, delay) {
+    let timeoutId;
+    return function () {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, arguments), delay);
     };
 }
